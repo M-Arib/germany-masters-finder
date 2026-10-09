@@ -1,0 +1,385 @@
+<title>Summer 2027 AI Masters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an application tracker. Status summary on top, filters, then programmes grouped by admission state, each row with its own application-window timeline. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #17211f;
+  --muted: #5b6965;
+  --line: #dde3e0;
+  --accent: #1f6f5c;
+  --accent-soft: #e2f0eb;
+  --chip: #eef1f0;
+
+  --s-closing: #b4361f; --s-closing-bg: #fbe7e2;
+  --s-open: #1f7a4a;    --s-open-bg: #e1f3e8;
+  --s-upcoming: #2d5fa8; --s-upcoming-bg: #e3ecf8;
+  --s-unpub: #7a6420;   --s-unpub-bg: #f6efd9;
+  --s-rolling: #6a4aa0; --s-rolling-bg: #eee8f7;
+  --s-closed: #7c8783;  --s-closed-bg: #eceeed;
+
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101614; --surface: #172019; --ink: #e6ece9; --muted: #9aa8a3; --line: #2a3531;
+    --accent: #5cc2a4; --accent-soft: #1b3129; --chip: #1f2a26;
+    --s-closing: #ff8a72; --s-closing-bg: #3a1d17;
+    --s-open: #6fd39b;    --s-open-bg: #16301f;
+    --s-upcoming: #8db4f0; --s-upcoming-bg: #172540;
+    --s-unpub: #e0c26a;   --s-unpub-bg: #33290f;
+    --s-rolling: #c2a5f0; --s-rolling-bg: #2a1f3d;
+    --s-closed: #8c9894;  --s-closed-bg: #1e2724;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101614; --surface: #172019; --ink: #e6ece9; --muted: #9aa8a3; --line: #2a3531;
+  --accent: #5cc2a4; --accent-soft: #1b3129; --chip: #1f2a26;
+  --s-closing: #ff8a72; --s-closing-bg: #3a1d17;
+  --s-open: #6fd39b;    --s-open-bg: #16301f;
+  --s-upcoming: #8db4f0; --s-upcoming-bg: #172540;
+  --s-unpub: #e0c26a;   --s-unpub-bg: #33290f;
+  --s-rolling: #c2a5f0; --s-rolling-bg: #2a1f3d;
+  --s-closed: #8c9894;  --s-closed-bg: #1e2724;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 64px; display: grid; gap: 28px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; margin: 0 0 8px; text-wrap: balance; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); max-width: 68ch; }
+header .meta { font-family: var(--f-mono); font-size: 12px; margin-top: 10px; color: var(--muted); }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; text-align: left; cursor: pointer; font: inherit; color: inherit; display: grid; gap: 2px; }
+.tile:hover { border-color: var(--muted); }
+.tile[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.tile .n { font-family: var(--f-display); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tile .l { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-btn { font: inherit; font-size: 13.5px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.chip-btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.controls input[type="search"], .controls select { font: inherit; font-size: 14px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.controls input[type="search"] { flex: 1 1 220px; min-width: 0; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+
+.group { display: grid; gap: 10px; }
+.group h2 { font-family: var(--f-display); font-weight: 700; font-size: 20px; margin: 8px 0 0; display: flex; align-items: baseline; gap: 10px; }
+.group h2 .count { font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-weight: 400; }
+.group > p.hint { margin: -4px 0 4px; color: var(--muted); font-size: 13.5px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 14px 24px; }
+.card.closed { opacity: .72; }
+.main { min-width: 0; display: grid; gap: 8px; }
+.top { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.pill { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; letter-spacing: .01em; }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.qs { font-family: var(--f-mono); font-size: 12px; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); color: var(--ink); }
+.qs.none { color: var(--muted); }
+.free { font-size: 12px; color: var(--s-open); font-weight: 600; }
+.ua { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; }
+.ua.red { color: var(--s-closing); background: var(--s-closing-bg); border: 1px solid var(--s-closing); }
+.ua.amber { color: var(--s-unpub); background: var(--s-unpub-bg); }
+.ua.green { color: var(--s-open); background: var(--s-open-bg); }
+.ua svg { width: 13px; height: 13px; flex: none; }
+.cost { font-size: 13px; display: grid; gap: 1px; padding-top: 6px; border-top: 1px solid var(--line); }
+.cost .amt { font-family: var(--f-display); font-weight: 700; font-size: 19px; font-variant-numeric: tabular-nums; }
+.cost .sub { color: var(--muted); font-size: 12px; }
+.warn { font-size: 13px; color: var(--s-closing); background: var(--s-closing-bg); border-radius: 8px; padding: 8px 10px; display: flex; gap: 8px; align-items: flex-start; }
+.warn svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.card h3 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 18.5px; line-height: 1.25; text-wrap: balance; }
+.uni { color: var(--muted); font-size: 14px; }
+.why { margin: 0; font-size: 14.5px; max-width: 70ch; }
+.skills { display: flex; flex-wrap: wrap; gap: 5px; }
+.skill { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--chip); color: var(--ink); }
+.skill.core { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.skills .none { font-size: 12.5px; color: var(--muted); font-style: italic; }
+details { font-size: 13.5px; color: var(--muted); }
+details summary { cursor: pointer; color: var(--ink); font-weight: 500; width: fit-content; }
+details dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 8px 0 0; }
+details dt { color: var(--muted); }
+details dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.links { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; }
+
+.side { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.dates { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; font-size: 13px; }
+.dates dt { color: var(--muted); }
+.dates dd { margin: 0; font-family: var(--f-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.countdown { font-weight: 600; font-size: 13.5px; }
+.tl { position: relative; height: 34px; }
+.tl .track { position: absolute; left: 0; right: 0; top: 10px; height: 6px; border-radius: 3px; background: var(--chip); }
+.tl .win { position: absolute; top: 10px; height: 6px; border-radius: 3px; }
+.tl .win.guess { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; }
+.tl .today { position: absolute; top: 4px; width: 2px; height: 18px; background: var(--ink); border-radius: 1px; }
+.tl .ticks { position: absolute; left: 0; right: 0; top: 20px; display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 10px; color: var(--muted); }
+
+.empty { padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; }
+footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; max-width: 80ch; }
+footer p { margin: 0; }
+
+@media (max-width: 720px) {
+  .card { grid-template-columns: minmax(0, 1fr); }
+  .wrap { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tile, .chip-btn { transition: border-color .15s, background-color .15s; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Summer 2027 AI Masters</h1>
+    <p>English-taught master's programmes in Germany for AI, machine learning, robotics and data science, starting April 2027. Grouped by whether you can apply right now. Click a status tile to show only that group.</p>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <section class="summary" id="summary" aria-label="Admission status summary"></section>
+
+  <section class="controls" aria-label="Filters">
+    <div class="chips" id="focusChips" role="group" aria-label="Field"></div>
+    <input type="search" id="q" placeholder="Search university, programme, city or skill" aria-label="Search">
+    <select id="sort" aria-label="Sort within groups">
+      <option value="status">Sort: most urgent first</option>
+      <option value="qs">Sort: QS world rank</option>
+      <option value="cost">Sort: lowest cost</option>
+    </select>
+    <label class="toggle"><input type="checkbox" id="freeOnly"> No tuition only</label>
+    <label class="toggle"><input type="checkbox" id="rankedOnly"> QS-ranked only</label>
+    <label class="toggle"><input type="checkbox" id="noUniAssist"> Hide uni-assist programmes</label>
+  </section>
+
+  <main id="list"></main>
+
+  <footer>
+    <p><strong>Deadlines</strong> are for non-EU applicants where the university separates them; EU applicants often have later dates. Dashed timeline bars mean the opening date is not published, so the bar shows only the run-up to the deadline.</p>
+    <p><strong>Costs</strong> are per semester for non-EU students: tuition plus the semester contribution (which usually includes a public-transport ticket). A master's is normally 3–4 semesters. The student visa also needs a blocked account (about €11,900 a year at the 2025 rate).</p>
+    <p><strong>uni-assist</strong> checks foreign documents for many German universities. Red means it's required, either as the full application or as a pre-check (VPD) before you apply on the university portal. It costs €75 for the first application and €30 for each additional one in the same semester, and processing takes 4–8 weeks, so start well before the deadline. Amber means it's likely but not confirmed. Green means DAAD doesn't mention it, but check the programme website to be sure.</p>
+    <p><strong>World rank</strong> is the QS World University Rankings 2026. Universities of applied sciences and many smaller universities are not ranked by QS; that says nothing about programme quality.</p>
+    <p><strong>Skills</strong> come from each programme's DAAD course description. A missing skill may still be offered as an elective, so check the module handbook.</p>
+    <p>Data: DAAD International Programmes database and university websites. Confirm every date on the official page before applying.</p>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const STATUS = {
+  closing:    { label: "Closing soon",          hint: "Open now, deadline within 3 weeks. Apply first.", color: "--s-closing" },
+  open:       { label: "Open now",              hint: "The application window is open.", color: "--s-open" },
+  upcoming:   { label: "Opening soon",          hint: "The window hasn't opened yet. Get documents ready.", color: "--s-upcoming" },
+  unpub:      { label: "Deadline ahead",        hint: "Opening date not published. The portal may already be open, so check the website.", color: "--s-unpub" },
+  rolling:    { label: "Rolling admission",     hint: "No fixed deadline; places go to early applicants.", color: "--s-rolling" },
+  unknown:    { label: "No date published",     hint: "Neither DAAD nor the university lists a summer deadline. Email the programme.", color: "--s-closed" },
+  closed:     { label: "Closed for summer 2027", hint: "Deadline has passed. Most of these also take winter 2027/28 applicants.", color: "--s-closed" },
+};
+const ORDER = ["closing", "open", "upcoming", "unpub", "rolling", "unknown", "closed"];
+const CORE = new Set(["Machine Learning","Deep Learning","Computer Vision","NLP","Reinforcement Learning","Robotics","Autonomous Systems","Data Science","Data Mining","Big Data & Cloud"]);
+const FOCI = ["All", "AI & ML", "Robotics", "Data Science", "CS with AI track"];
+
+const ICON_WARN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.2 15.3 14H.7L8 1.2Zm0 2.7L3.1 12.5h9.8L8 3.9Zm-.75 3.1h1.5v3.2h-1.5V7Zm0 4h1.5v1.4h-1.5V11Z"/></svg>';
+const ICON_OK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.4 11.6 2.8 8l1.1-1.1 2.5 2.5 5.7-5.7 1.1 1.1-6.8 6.8Z"/></svg>';
+const UA = {
+  full:  { cls: "red",   text: "uni-assist required",      icon: ICON_WARN },
+  vpd:   { cls: "red",   text: "uni-assist VPD required",  icon: ICON_WARN },
+  maybe: { cls: "amber", text: "uni-assist likely",        icon: ICON_WARN },
+  none:  { cls: "green", text: "Direct application",       icon: ICON_OK },
+};
+const euro = n => "€" + Number(n).toLocaleString("en-GB");
+const totalCost = p => p.fee == null ? null : p.fee + (p.contribution || 0);
+
+const DAY = 86400000;
+const today = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); })();
+const toDate = s => s ? new Date(s + "T00:00:00") : null;
+const days = d => Math.round((d - today) / DAY);
+const fmt = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const qsNum = q => q ? parseInt(q, 10) : 99999;
+
+function statusOf(p) {
+  if (p.rolling) return "rolling";
+  const dl = toDate(p.deadline), st = toDate(p.start);
+  if (!dl) return "unknown";
+  if (dl < today) return "closed";
+  if (st && st > today) return "upcoming";
+  if (days(dl) <= 21) return "closing";
+  return st ? "open" : "unpub";
+}
+
+const programmes = DATA.programmes.map(p => ({ ...p, status: statusOf(p) }));
+
+let state = { focus: "All", status: null, q: "", sort: "status", freeOnly: false, rankedOnly: false, noUniAssist: false };
+try { Object.assign(state, JSON.parse(localStorage.getItem("ai-masters-filters") || "{}"), { status: null }); } catch (e) {}
+const save = () => { try { localStorage.setItem("ai-masters-filters", JSON.stringify({ ...state, status: null })); } catch (e) {} };
+
+// Timeline spans the summer-2027 application season: 1 Apr 2026 to 1 Apr 2027
+const T0 = new Date(2026, 3, 1), T1 = new Date(2027, 3, 1);
+const pct = d => Math.max(0, Math.min(100, (d - T0) / (T1 - T0) * 100));
+
+function timeline(p) {
+  const dl = toDate(p.deadline), st = toDate(p.start);
+  const color = `var(${STATUS[p.status].color})`;
+  let bar = "";
+  if (dl) {
+    const guess = !st;
+    const from = st || new Date(dl - 42 * DAY);
+    bar = `<div class="win${guess ? " guess" : ""}" style="left:${pct(from)}%;width:${Math.max(1.2, pct(dl) - pct(from))}%;background:${color};color:${color}"></div>`;
+  }
+  return `<div class="tl" aria-hidden="true"><div class="track"></div>${bar}
+    <div class="today" style="left:calc(${pct(today)}% - 1px)" title="Today"></div>
+    <div class="ticks"><span>Apr</span><span>Jul</span><span>Oct</span><span>Jan</span><span>Apr</span></div></div>`;
+}
+
+function countdown(p) {
+  const dl = toDate(p.deadline), st = toDate(p.start);
+  const c = `style="color:var(${STATUS[p.status].color})"`;
+  switch (p.status) {
+    case "closing": case "open": case "unpub": {
+      const n = days(dl);
+      return `<div class="countdown" ${c}>${n === 0 ? "Deadline today" : `${n} day${n === 1 ? "" : "s"} to deadline`}</div>`;
+    }
+    case "upcoming": { const n = days(st); return `<div class="countdown" ${c}>Opens in ${n} day${n === 1 ? "" : "s"}</div>`; }
+    case "closed": return `<div class="countdown" ${c}>Closed ${fmt(dl)}</div>`;
+    case "rolling": return `<div class="countdown" ${c}>Apply any time</div>`;
+    default: return `<div class="countdown" ${c}>Ask the university</div>`;
+  }
+}
+
+function card(p) {
+  const s = STATUS[p.status];
+  const skills = p.skills.length
+    ? p.skills.map(k => `<span class="skill${CORE.has(k) ? " core" : ""}">${esc(k)}</span>`).join("")
+    : `<span class="none">No skills listed in the DAAD description. Check the module handbook.</span>`;
+  const startLine = p.start ? (p.approx ? "≈ " : "") + fmt(toDate(p.start)) : esc(p.startText);
+  const dlLine = p.deadline ? fmt(toDate(p.deadline)) : esc(p.deadlineText);
+  const sourceLink = p.startSource && p.startSource.startsWith("http") ? `<a href="${esc(p.startSource)}" target="_blank" rel="noopener">Opening-date source</a>` : "";
+  return `<article class="card${p.status === "closed" ? " closed" : ""}">
+    <div class="main">
+      <div class="top">
+        <span class="pill" style="color:var(${s.color});background:var(${s.color}-bg)">${s.label}</span>
+        <span class="tag">${esc(p.focus)}</span>
+        <span class="qs${p.qs ? "" : " none"}">${p.qs ? "QS #" + esc(p.qs) : "Not QS-ranked"}</span>
+        <span class="ua ${UA[p.uniAssist].cls}" title="${esc(p.uniAssistLabel)}">${UA[p.uniAssist].icon}${UA[p.uniAssist].text}</span>
+      </div>
+      <h3>${esc(p.program)}</h3>
+      <div class="uni">${esc(p.university)} · ${esc(p.city)}</div>
+      <p class="why">${esc(p.why)}</p>
+      ${UA[p.uniAssist].cls === "red" ? `<div class="warn" role="note">${ICON_WARN}<span><strong>uni-assist:</strong> ${esc(p.uniAssistLabel)}. Allow 4–8 weeks before the deadline.</span></div>` : ""}
+      <div class="skills" aria-label="Skills taught">${skills}</div>
+      <details>
+        <summary>Details and requirements</summary>
+        <dl>
+          <dt>Tuition (non-EU)</dt><dd>${p.fee == null ? "Varies. Check the website" : p.fee === 0 ? "None" : euro(p.fee) + " per semester"}${p.feeNote ? " (" + esc(p.feeNote) + ")" : ""}</dd>
+          <dt>Semester fee</dt><dd>${p.contribution == null ? "See website" : euro(p.contribution) + " per semester"}</dd>
+          <dt>Duration</dt><dd>${esc(p.duration)}</dd>
+          <dt>Language</dt><dd>${esc(p.language)}</dd>
+          <dt>Language req.</dt><dd>${esc(p.langReq)}</dd>
+          <dt>Apply via</dt><dd>${esc(p.uniAssistLabel)}</dd>
+          ${p.notes ? `<dt>Notes</dt><dd>${esc(p.notes)}</dd>` : ""}
+        </dl>
+      </details>
+      <div class="links">
+        ${p.website ? `<a href="${esc(p.website)}" target="_blank" rel="noopener">Programme website</a>` : ""}
+        <a href="${esc(p.daad)}" target="_blank" rel="noopener">DAAD listing</a>
+        ${sourceLink}
+      </div>
+    </div>
+    <div class="side">
+      ${countdown(p)}
+      <dl class="dates">
+        <dt>Opens</dt><dd>${startLine}</dd>
+        <dt>Deadline</dt><dd>${dlLine}</dd>
+      </dl>
+      ${timeline(p)}
+      <div class="cost">
+        <span class="sub">Cost per semester (non-EU)</span>
+        <span class="amt">${totalCost(p) == null ? "Varies" : euro(totalCost(p))}</span>
+        <span class="sub">${p.fee == null ? "Tuition not fixed on DAAD" : p.fee === 0 ? "No tuition" : euro(p.fee) + " tuition"}${p.contribution ? " + " + euro(p.contribution) + " semester fee" : ""}</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  return programmes.filter(p =>
+    (state.focus === "All" || p.focus === state.focus) &&
+    (!state.freeOnly || p.free) &&
+    (!state.rankedOnly || p.qs) &&
+    (!state.noUniAssist || UA[p.uniAssist].cls === "green") &&
+    (!q || [p.university, p.program, p.city, p.focus, ...p.skills].join(" ").toLowerCase().includes(q)));
+}
+
+function sortGroup(list, key) {
+  const by = {
+    status: {
+      closing: (a, b) => a.deadline.localeCompare(b.deadline),
+      open: (a, b) => a.deadline.localeCompare(b.deadline),
+      upcoming: (a, b) => a.start.localeCompare(b.start),
+      unpub: (a, b) => a.deadline.localeCompare(b.deadline),
+      closed: (a, b) => b.deadline.localeCompare(a.deadline),
+    }[key],
+  };
+  const fallback = (a, b) => qsNum(a.qs) - qsNum(b.qs) || a.university.localeCompare(b.university);
+  const cost = (a, b) => (totalCost(a) ?? 1e9) - (totalCost(b) ?? 1e9) || fallback(a, b);
+  return list.sort(state.sort === "qs" ? fallback : state.sort === "cost" ? cost : (by.status || fallback));
+}
+
+function render() {
+  const list = filtered();
+  const counts = Object.fromEntries(ORDER.map(k => [k, list.filter(p => p.status === k).length]));
+
+  document.getElementById("summary").innerHTML = ORDER.filter(k => counts[k] || k === "closing" || k === "open").map(k => `
+    <button class="tile" data-status="${k}" aria-pressed="${state.status === k}">
+      <span class="n">${counts[k]}</span>
+      <span class="l"><span class="dot" style="background:var(${STATUS[k].color})"></span>${STATUS[k].label}</span>
+    </button>`).join("");
+
+  document.getElementById("focusChips").innerHTML = FOCI.map(f =>
+    `<button class="chip-btn" data-focus="${esc(f)}" aria-pressed="${state.focus === f}">${esc(f)}</button>`).join("");
+
+  const groups = ORDER.filter(k => (!state.status || state.status === k) && counts[k]);
+  document.getElementById("list").innerHTML = groups.length ? groups.map(k => `
+    <section class="group">
+      <h2><span class="dot" style="background:var(${STATUS[k].color});width:10px;height:10px"></span>${STATUS[k].label}<span class="count">${counts[k]}</span></h2>
+      <p class="hint">${STATUS[k].hint}</p>
+      ${sortGroup(list.filter(p => p.status === k), k).map(card).join("")}
+    </section>`).join("<div style='height:12px'></div>")
+    : `<div class="empty">No programmes match these filters. Clear the search or pick another field.</div>`;
+}
+
+document.getElementById("meta").textContent =
+  `${programmes.length} programmes · status as of ${fmt(today)} · data collected ${fmt(toDate(DATA.built))}`;
+
+const qEl = document.getElementById("q"), sortEl = document.getElementById("sort"),
+      freeEl = document.getElementById("freeOnly"), rankedEl = document.getElementById("rankedOnly"),
+      uaEl = document.getElementById("noUniAssist");
+qEl.value = state.q; sortEl.value = state.sort; freeEl.checked = state.freeOnly; rankedEl.checked = state.rankedOnly; uaEl.checked = state.noUniAssist;
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-status],[data-focus]");
+  if (!t) return;
+  if (t.dataset.status) state.status = state.status === t.dataset.status ? null : t.dataset.status;
+  if (t.dataset.focus) state.focus = t.dataset.focus;
+  save(); render();
+});
+qEl.addEventListener("input", () => { state.q = qEl.value; save(); render(); });
+sortEl.addEventListener("change", () => { state.sort = sortEl.value; save(); render(); });
+freeEl.addEventListener("change", () => { state.freeOnly = freeEl.checked; save(); render(); });
+rankedEl.addEventListener("change", () => { state.rankedOnly = rankedEl.checked; save(); render(); });
+uaEl.addEventListener("change", () => { state.noUniAssist = uaEl.checked; save(); render(); });
+
+render();
+</script>
