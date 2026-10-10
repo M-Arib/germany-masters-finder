@@ -112,9 +112,9 @@ def run(source=config.DATA_CSV) -> list[dict]:
     body = render(rows, dt.date.today())
 
     config.SITE_HTML.parent.mkdir(parents=True, exist_ok=True)
-    config.SITE_HTML.write_text(PAGE_HEAD + body + PAGE_TAIL, encoding="utf-8")
+    config.SITE_HTML.write_text(PAGE_HEAD + body + PAGE_TAIL, encoding="utf-8", newline="\n")
     config.FRAGMENT_HTML.parent.mkdir(parents=True, exist_ok=True)
-    config.FRAGMENT_HTML.write_text(body, encoding="utf-8")
+    config.FRAGMENT_HTML.write_text(body, encoding="utf-8", newline="\n")
 
     print(f"[*] {len(rows)} AI / ML / Robotics / Data programmes selected out of {len(df)}")
     print(f"[+] Wrote {config.SITE_HTML.relative_to(config.ROOT)}")
