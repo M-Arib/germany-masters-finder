@@ -8,7 +8,9 @@
 
 param([switch]$NoPush)
 
-$ErrorActionPreference = "Stop"
+# Failures are detected through exit codes below. "Stop" would also abort on harmless
+# warnings that git prints to stderr, which Windows PowerShell 5.1 treats as errors.
+$ErrorActionPreference = "Continue"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
 git pull --rebase --quiet

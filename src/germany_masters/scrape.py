@@ -89,7 +89,7 @@ def run(output=config.DATA_CSV) -> pd.DataFrame:
     df = df.sort_values(["_qs", "University", "Program_Name"]).drop(columns="_qs").reset_index(drop=True)
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output, index=False, encoding="utf-8-sig")
+    df.to_csv(output, index=False, encoding="utf-8-sig", lineterminator="\n")
 
     failed = (df["Detail_Fetch_Status"] != "OK").sum()
     has_start = (~df["Application_Start_Date"].str.startswith("Not published")).sum()
