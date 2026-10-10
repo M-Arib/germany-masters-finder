@@ -324,10 +324,17 @@ def main():
         html = f.read()
     payload = json.dumps({"built": TODAY.isoformat(), "programmes": rows}, ensure_ascii=False)
     html = html.replace("/*__DATA__*/null", payload.replace("</", "<\\/"))
-    # index.html is the copy GitHub Pages serves
-    for path in (OUTPUT_HTML, "index.html"):
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(html)
+    with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
+        f.write(html)
+    # index.html is the copy GitHub Pages serves; it needs its own document skeleton
+    standalone = (
+        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        '<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>\n'
+        '</head>\n<body>\n' + html + '\n</body>\n</html>\n'
+    )
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(standalone)
     print(f"[+] Wrote {OUTPUT_HTML} and index.html")
     return rows
 
