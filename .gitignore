@@ -1,7 +1,16 @@
+# Python
 __pycache__/
 *.pyc
+*.egg-info/
 .venv/
 venv/
+.pytest_cache/
+.ruff_cache/
+
+# Build output that isn't published (docs/index.html is)
+build/
+
+# Local
 .env
 .DS_Store
 Thumbs.db

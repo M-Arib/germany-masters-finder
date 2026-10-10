@@ -1,0 +1,46 @@
+name: Wrong or missing data
+description: A deadline, opening date, fee, uni-assist status or ranking is wrong or missing.
+title: "[Data] <University> – <Programme>"
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping keep this accurate. Please link the **official** university or DAAD page, since third-party sites are often out of date.
+  - type: input
+    id: programme
+    attributes:
+      label: University and programme
+      placeholder: "TU Darmstadt – M.Sc. Artificial Intelligence"
+    validations:
+      required: true
+  - type: dropdown
+    id: field
+    attributes:
+      label: What is wrong?
+      multiple: true
+      options:
+        - Application opening date
+        - Deadline
+        - Tuition or semester fee
+        - uni-assist / VPD requirement
+        - QS ranking
+        - Skills or programme focus
+        - Programme missing from the list
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: Correct information
+      description: What should it say? Mention whether it applies to non-EU or EU applicants.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Official source link
+      placeholder: "https://www.example-university.de/master/application"
+    validations:
+      required: true

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Official DAAD programme database
+    url: https://www2.daad.de/deutschland/studienangebote/international-programmes/en/
+    about: The source of the programme data. Check here first for the latest official information.

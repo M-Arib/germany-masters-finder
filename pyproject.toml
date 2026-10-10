@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "germany-masters-finder"
+version = "0.2.0"
+description = "DAAD scraper and dashboard for non-EU applicants to English-taught AI, ML, Robotics and Data Science master's programmes in Germany"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Arib" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0",
+    "primp>=1.2",
+    "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://m-arib.github.io/germany-masters-finder/"
+Repository = "https://github.com/M-Arib/germany-masters-finder"
+Issues = "https://github.com/M-Arib/germany-masters-finder/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]  # long URLs and sentences in reference data
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
