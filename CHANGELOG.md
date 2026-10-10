@@ -11,8 +11,10 @@
 ### Added
 - Unit tests for date, fee, semester-fee, uni-assist, skill and focus parsing, and an offline test of the DAAD page parser.
 - CI on every push (ruff + pytest on Python 3.10 and 3.12).
-- Weekly automatic data refresh via GitHub Actions.
+- `scripts/refresh.ps1`: one command to scrape, test, commit and publish. (A scheduled GitHub Action was tried first, but DAAD answers cloud servers with HTTP 403.)
+- Dependabot for Python packages and GitHub Actions.
 - Issue forms for data corrections and bugs, a pull-request template, `CONTRIBUTING.md`.
+- `docs/.nojekyll` so GitHub Pages serves the dashboard as-is.
 
 ### Removed
 - The invented "German rank" table and its placeholder QS numbers. Only verified QS 2026 ranks remain.

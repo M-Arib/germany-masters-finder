@@ -1,7 +1,6 @@
 # Germany Masters Finder
 
 [![CI](https://github.com/M-Arib/germany-masters-finder/actions/workflows/ci.yml/badge.svg)](https://github.com/M-Arib/germany-masters-finder/actions/workflows/ci.yml)
-[![Data refresh](https://github.com/M-Arib/germany-masters-finder/actions/workflows/refresh.yml/badge.svg)](https://github.com/M-Arib/germany-masters-finder/actions/workflows/refresh.yml)
 [![Live dashboard](https://img.shields.io/badge/dashboard-live-1f6f5c)](https://m-arib.github.io/germany-masters-finder/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -43,7 +42,7 @@ DAAD search API ──► detail page per programme ──► data/summer_2027.c
                                       + fee, date, skill and uni-assist parsing (classify.py)
 ```
 
-- A **GitHub Action re-scrapes DAAD every Monday** and republishes the dashboard if anything changed.
+- Data is refreshed with `scripts/refresh.ps1`, which scrapes, tests, commits and pushes. DAAD blocks requests from cloud servers, so this runs from a normal internet connection rather than GitHub Actions.
 - Admission status is computed **in the browser** from today's date, so it stays correct between refreshes.
 - The dashboard is a single static HTML file with no backend, tracking or cookies.
 
@@ -58,6 +57,8 @@ python -m germany_masters all      # scrape DAAD (~2 min) and build docs/index.h
 python -m germany_masters build    # rebuild the dashboard from data/ only
 pytest                             # run the tests
 ```
+
+To refresh and publish the live dashboard (Windows PowerShell): `.\scripts\refresh.ps1`
 
 **Different subjects or intake?** Set up a search on the [DAAD website](https://www2.daad.de/deutschland/studienangebote/international-programmes/en/), paste the result URL into `TARGET_URL` in [`config.py`](src/germany_masters/config.py), and adjust the intake settings next to it.
 
@@ -75,6 +76,7 @@ templates/dashboard.html   page design and in-browser logic
 data/                      generated programme data (CSV)
 docs/                      generated dashboard, served by GitHub Pages
 tests/                     unit tests and a trimmed DAAD page fixture
+scripts/refresh.ps1        scrape → test → commit → push
 ```
 
 ## ⚠️ Accuracy

@@ -34,7 +34,7 @@ pytest
 | Search, intake semester, year | `src/germany_masters/config.py` |
 | Dashboard layout and behaviour | `templates/dashboard.html` |
 
-`data/` and `docs/index.html` are generated. Don't edit them by hand; run `python -m germany_masters all` (or `build`) instead.
+`data/` and `docs/index.html` are generated. Don't edit them by hand; run `python -m germany_masters all` (or `build`) instead. Maintainers publish fresh data with `.\scripts\refresh.ps1`.
 
 ## Adding an opening date
 
